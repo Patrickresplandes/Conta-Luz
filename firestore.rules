@@ -1,0 +1,136 @@
+rules_version = '2';
+
+/**
+ * Firestore Security Rules — Controle de Energia
+ *
+ * MODELO DE DADOS
+ *   /usuarios/{uid}                       → perfil do usuário
+ *   /usuarios/{uid}/medicoes/{id}         → medições do usuário
+ *   /usuarios/{uid}/tarifa/atual          → tarifa vigente do usuário
+ *   /_rateLimit/{chave}                   → contador de taxa (só Admin)
+ *
+ * NOTA SOBRE O CAMINHO DA TARIFA
+ *   A tarifa fica na SUBCOLEÇÃO "tarifa", num documento de id fixo
+ *   ("atual"), e não em /usuarios/{uid}/tarifa. No Firestore, um caminho
+ *   com três segmentos é COLEÇÃO, não documento — e documento não pode ser
+ *   filho direto de outro documento. Por isso a regra precisa casar com
+ *   /tarifa/{id}.
+ *
+ * PRINCÍPIO CENTRAL
+ *   O uid NUNCA vem do cliente. O request.auth.uid é a única fonte de
+ *   identidade. Isso torna impossível, por construção, ler ou alterar
+ *   dados de outra pessoa: cada regra compara request.auth.uid com o uid
+ *   do caminho, e um usuário logado só acessa o próprio subdiretório.
+ *
+ * POR QUE O CLIENTE NÃO ESCREVE DIRETAMENTE
+ *   Todas as escritas do cliente passam pelas API Routes, que revalidam
+ *   os dados no servidor com Zod. Por isso as regras abaixo são
+ *   deliberadamente restritivas para escrita: o acesso do cliente é de
+ *   LEITURA apenas. Se uma regra de escrita ficar permissiva demais,
+ *   alguém poderia contornar a validação do servidor.
+ *
+ *   O SDK Admin (servidor) ignora estas regras — por isso as regras
+ *   valem como segunda camada, não como única.
+ *
+ * REGRAS DE CAMPOS
+ *   Mesmo onde a escrita fosse permitida, cada campo tem tipo e limite
+ *   explícito. Um usuário que consiga escrever direto no Firestore não
+ *   consegue gravar string gigante, número negativo onde não cabe, nem
+ *   objeto aninhado arbitrário.
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /* ----------------------------------------------------------------
+       Helpers
+       ---------------------------------------------------------------- */
+    function autenticado() {
+      return request.auth != null;
+    }
+
+    function ehDono(uid) {
+      return autenticado() && request.auth.uid == uid;
+    }
+
+    /* E-mail confirmado: sem isso, qualquer um cria uma conta com um
+       e-mail falso e ocupa espaço na quota do projeto. */
+    function emailConfirmado() {
+      return autenticado() && request.auth.token.email_verified == true;
+    }
+
+    /* ----------------------------------------------------------------
+       Perfil do usuário
+       ---------------------------------------------------------------- */
+    match /usuarios/{uid} {
+
+      /* Leitura do próprio perfil — só com e-mail confirmado. */
+      allow read: if ehDono(uid) && emailConfirmado();
+
+      /* Criação do próprio perfil: só os campos de perfil, só no momento
+         em que o documento ainda não existe, e com o uid do próprio
+         request. O e-mail precisa estar confirmado: um endereço falso
+         confirmaria a conta com um clique, sem provar que existe. */
+      allow create: if ehDono(uid)
+        && emailConfirmado()
+        && request.resource.data.keys().hasOnly(['nome', 'email', 'criadoEm'])
+        && request.resource.data.nome is string
+        && request.resource.data.nome.size() <= 120
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 254;
+
+      /* Atualização do próprio perfil: não pode trocar o e-mail por
+         dentro (isso é responsabilidade do Firebase Auth). */
+      allow update: if ehDono(uid)
+        && emailConfirmado()
+        && request.resource.data.keys().hasOnly(['nome', 'email', 'criadoEm', 'atualizadoEm'])
+        && request.resource.data.nome is string
+        && request.resource.data.nome.size() <= 120
+        && request.resource.data.email == resource.data.email;
+
+      /* O usuário não apaga o próprio perfil: isso derruba a conta e
+         deixa órfãos. A remoção é feita por processo administrativo. */
+      allow delete: if false;
+
+      /* --------------------------------------------------------------
+         Medições
+         --------------------------------------------------------------
+         Leitura liberada ao dono, com e-mail confirmado. Escrita
+         bloqueada para o cliente — as API Routes validam e gravam com
+         o SDK Admin. */
+      match /medicoes/{id} {
+        allow read: if ehDono(uid) && emailConfirmado();
+        allow write: if false;
+      }
+
+      /* --------------------------------------------------------------
+         Tarifa
+         --------------------------------------------------------------
+         Subcoleção "tarifa" com um documento de id fixo ("atual") — a
+         tarifa vigente do usuário. */
+      match /tarifa/{id} {
+        allow read: if ehDono(uid) && emailConfirmado();
+        allow write: if false;
+      }
+    }
+
+    /* ----------------------------------------------------------------
+       Contadores de rate limit
+       ----------------------------------------------------------------
+       Escritos e lidos SOMENTE pelo SDK Admin, que ignora as rules.
+       Nenhum cliente — nem autenticado — pode tocá-los. */
+    match /_rateLimit/{chave} {
+      allow read, write: if false;
+    }
+
+    /* ----------------------------------------------------------------
+       Regra de captura
+       ----------------------------------------------------------------
+       Qualquer caminho não previsto acima é NEGADO. Sem isso, um
+       documento criado em uma coleção nova seria acessível por padrão
+       em algumas configurações. Negar por omissão é fail-closed. */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

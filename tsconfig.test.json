@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "paths": {
+      "@/*": ["./src/*"],
+      "zod": ["./zod-stub.ts"]
+    }
+  },
+  "include": [
+    "test-energy-core.ts",
+    "test-paridade.ts",
+    "test-seguranca.ts",
+    "test-importar.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "zod-stub.ts",
+    "tipos-stub.d.ts"
+  ],
+  "exclude": ["node_modules"]
+}

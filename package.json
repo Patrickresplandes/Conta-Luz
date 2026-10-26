@@ -1,0 +1,39 @@
+{
+  "name": "controle-energia",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Controle de gasto de energia — projeção de fatura, histórico e comparativo com a fatura real",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx test-energy-core.ts",
+    "test:paridade": "tsx test-paridade.ts",
+    "test:seguranca": "tsx test-seguranca.ts",
+    "test:importar": "tsx test-importar.ts",
+    "test:tudo": "npm run test && npm run test:paridade && npm run test:seguranca && npm run test:importar"
+  },
+  "dependencies": {
+    "firebase": "^11.1.0",
+    "firebase-admin": "^13.0.2",
+    "next": "^15.1.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "server-only": "^0.0.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.4",
+    "@types/react-dom": "^19.0.2",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "^15.1.3",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

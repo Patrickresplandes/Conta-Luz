@@ -1,0 +1,1299 @@
+/*
+ * globals.css — Sistema visual do Controle de Energia.
+ *
+ * A referência não é um painel de SaaS: é o VISOR DE UM MEDIDOR DE
+ * ENERGIA. Fundo de interruptor, mostradores escuros com dígitos de
+ * segmentos, verde de leitura, vermelho de alerta.
+ *
+ * Regras que valem para o projeto inteiro:
+ *   • Sem gradiente decorativo. Cor sólida, sempre.
+ *   • Sem "card" repetido: chapa é superfície de página, não bolha flutuante.
+ *   • Sombra mínima. O hierarquia vem do espaço e da linha, não do blur.
+ *   • Uma família tipográfica (IBM Plex Sans) — o contraste vem do peso e
+ *     do tamanho, não da mistura de fontes.
+ *   • Números sempre em fonte monoespaçada: eles precisam alinhar em
+ *     coluna como num visor.
+ */
+
+/* ---------------------------------------------------------------------
+   1. Tokens
+   --------------------------------------------------------------------- */
+
+:root {
+  color-scheme: light;
+
+  /* Superfícies — doInterruptor ao papel */
+  --fundo: #eceae4;
+  --fundo-fundo: #e2dfd7;
+  --papel: #faf9f6;
+  --chapa: #ffffff;
+  --visor: #14161a;
+  --visor-alto: #1c1f25;
+
+  /* Tinta */
+  --tinta: #16181d;
+  --tinta-media: #4c5058;
+  --tinta-fraca: #82868f;
+  --tinta-invertida: #f7f6f3;
+
+  /* Linhas */
+  --traco: #ddd9d0;
+  --traco-forte: #b4afa4;
+
+  /* Acento: verde de leitura de medidor */
+  --acento: #0f7a52;
+  --acento-forte: #0a5c3d;
+  --acento-claro: #e6f2ec;
+
+  /* Estado */
+  --perigo: #a32a17;
+  --perigo-claro: #fbeae7;
+  --alerta: #9a6212;
+  --alerta-claro: #fbf1dd;
+  --info: #2b5c86;
+  --info-claro: #e7eff6;
+
+  /* Bandeiras */
+  --bandeira-verde: #1f8a5b;
+  --bandeira-amarela: #d19a1f;
+  --bandeira-amarela2: #c97612;
+  --bandeira-vermelha: #c1392a;
+  --bandeira-vermelha2: #8f1d16;
+
+  /* Tipografia.
+     As duas primeiras famílias vêm do `next/font` (variáveis de classe no
+     <html>); as demais são o fallback do sistema, para o texto continuar
+     legível se a fonte não carregar. */
+  --fonte-corpo: var(--fonte-plex-sans), 'IBM Plex Sans', 'Segoe UI', system-ui,
+    -apple-system, sans-serif;
+  --fonte-mono: var(--fonte-plex-mono), 'IBM Plex Mono', 'SF Mono', 'Cascadia Mono',
+    Consolas, monospace;
+
+  /* Espaçamento — escala de 4px */
+  --e1: 4px;
+  --e2: 8px;
+  --e3: 12px;
+  --e4: 16px;
+  --e5: 24px;
+  --e6: 32px;
+  --e7: 48px;
+  --e8: 64px;
+
+  /* Contorno */
+  --raio: 3px;
+  --raio-g: 5px;
+  --foco: 0 0 0 3px rgba(15, 122, 82, 0.32);
+
+  --sombra-baixa: 0 1px 2px rgba(22, 24, 29, 0.06);
+  --sombra-media: 0 2px 8px rgba(22, 24, 29, 0.08);
+}
+
+/* ---------------------------------------------------------------------
+   2. Base
+   --------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--tinta);
+  font-family: var(--fonte-corpo);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.014em;
+  line-height: 1.25;
+}
+
+h1 {
+  font-size: 25px;
+}
+h2 {
+  font-size: 17px;
+}
+h3 {
+  font-size: 15px;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--acento-forte);
+  text-underline-offset: 3px;
+}
+
+code,
+.mono {
+  font-family: var(--fonte-mono);
+  font-size: 0.92em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Foco visível e consistente em todo o app. */
+:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+  border-radius: var(--raio);
+}
+
+::selection {
+  background: var(--acento);
+  color: var(--tinta-invertida);
+}
+
+/* ---------------------------------------------------------------------
+   3. Utilitários
+   --------------------------------------------------------------------- */
+
+.pilha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e5);
+}
+
+.pilha-pequena {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e3);
+}
+
+.linha {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  flex-wrap: wrap;
+}
+
+.linha-campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--e4);
+}
+
+.empurra {
+  margin-left: auto;
+}
+
+.texto-pequeno {
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.texto-medio {
+  font-size: 13.5px;
+}
+
+.texto-fraco {
+  color: var(--tinta-fraca);
+}
+
+.num {
+  text-align: right;
+  font-family: var(--fonte-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.principal-col {
+  font-weight: 500;
+}
+
+.diferenca-pos {
+  color: var(--perigo);
+}
+
+.diferenca-neg {
+  color: var(--acento-forte);
+}
+
+/* ---------------------------------------------------------------------
+   4. Superfícies
+   --------------------------------------------------------------------- */
+
+.chapa {
+  background: var(--chapa);
+  border: 1px solid var(--traco);
+  border-radius: var(--raio-g);
+  box-shadow: var(--sombra-baixa);
+  overflow: hidden;
+}
+
+.chapa-cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--e4);
+  padding: var(--e4) var(--e5);
+  border-bottom: 1px solid var(--traco);
+  background: var(--papel);
+}
+
+.chapa-cabecalho .sub {
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--tinta-fraca);
+}
+
+.chapa-corpo {
+  padding: var(--e5);
+}
+
+.grade {
+  display: grid;
+  gap: var(--e4);
+}
+
+.grade-2 {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.grade-3 {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.grade-4 {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.grade-medicao {
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .grade-medicao {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   5. Mostradores — os números grandes
+   --------------------------------------------------------------------- */
+
+.mostrador {
+  background: var(--visor);
+  color: var(--tinta-invertida);
+  border-radius: var(--raio-g);
+  padding: var(--e5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--e2);
+  /* Textura sutil de mostrador: linhas horizontais finíssimas. */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.022) 0,
+    rgba(255, 255, 255, 0.022) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+.mostrador-rotulo {
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(247, 246, 243, 0.58);
+}
+
+.mostrador-valor {
+  font-family: var(--fonte-mono);
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--acento-claro);
+}
+
+.cifrao {
+  font-family: var(--fonte-corpo);
+  font-size: 13px;
+  font-weight: 400;
+  margin-left: 6px;
+  color: rgba(247, 246, 243, 0.6);
+  letter-spacing: 0;
+}
+
+.mostrador-nota {
+  font-size: 12.5px;
+  color: rgba(247, 246, 243, 0.55);
+}
+
+.mostrador-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e4);
+  margin: var(--e3) 0 0;
+  padding-top: var(--e3);
+  border-top: 1px solid rgba(247, 246, 243, 0.12);
+}
+
+.mostrador-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.mostrador-item dt {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(247, 246, 243, 0.5);
+}
+
+.mostrador-item dd {
+  margin: 0;
+  font-family: var(--fonte-mono);
+  font-size: 14.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------------
+   6. Campos
+   --------------------------------------------------------------------- */
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.campo label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--tinta-media);
+}
+
+.campo-dica {
+  font-size: 11.5px;
+  color: var(--tinta-fraca);
+  line-height: 1.4;
+}
+
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='number'],
+input[type='date'],
+select,
+textarea {
+  width: 100%;
+  padding: 9px 11px;
+  font-family: inherit;
+  font-size: 14.5px;
+  color: var(--tinta);
+  background: var(--papel);
+  border: 1px solid var(--traco-forte);
+  border-radius: var(--raio);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+input[type='number'] {
+  font-family: var(--fonte-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--tinta-fraca);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--acento);
+  box-shadow: var(--foco);
+}
+
+input:disabled,
+select:disabled,
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--tinta-media) 50%),
+    linear-gradient(135deg, var(--tinta-media) 50%, transparent 50%);
+  background-position: calc(100% - 16px) calc(50% + 1px), calc(100% - 11px) calc(50% + 1px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 32px;
+}
+
+.campo-com-sufixo {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.campo-com-sufixo input {
+  padding-right: 42px;
+}
+
+.campo-com-sufixo .sufixo {
+  position: absolute;
+  right: 11px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--tinta-fraca);
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------
+   7. Botões
+   --------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e2);
+  padding: 9px 16px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--tinta);
+  background: var(--chapa);
+  border: 1px solid var(--traco-forte);
+  border-radius: var(--raio);
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--fundo);
+  border-color: var(--tinta-fraca);
+}
+
+.btn-principal {
+  color: var(--tinta-invertida);
+  background: var(--acento-forte);
+  border-color: var(--acento-forte);
+}
+
+.btn-principal:hover:not(:disabled) {
+  background: var(--acento);
+  border-color: var(--acento);
+}
+
+.btn-fantasma {
+  background: transparent;
+  border-color: transparent;
+  color: var(--acento-forte);
+  padding: 6px 10px;
+}
+
+.btn-fantasma:hover:not(:disabled) {
+  background: var(--acento-claro);
+  border-color: transparent;
+}
+
+.btn-largo {
+  width: 100%;
+  padding: 11px 16px;
+}
+
+/* ---------------------------------------------------------------------
+   8. Etiquetas e faixas
+   --------------------------------------------------------------------- */
+
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  border: 1px solid var(--traco);
+  border-radius: 2px;
+  color: var(--tinta-media);
+  background: var(--fundo);
+  white-space: nowrap;
+}
+
+.etiqueta-verde {
+  color: var(--acento-forte);
+  background: var(--acento-claro);
+  border-color: #bcdcca;
+}
+
+.etiqueta-amarela {
+  color: var(--alerta);
+  background: var(--alerta-claro);
+  border-color: #e6d0a3;
+}
+
+.etiqueta-vermelha {
+  color: var(--perigo);
+  background: var(--perigo-claro);
+  border-color: #eec6c0;
+}
+
+.ponto-bandeira {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--traco-forte);
+  flex: none;
+}
+
+.bandeira-verde .ponto-bandeira {
+  background: var(--bandeira-verde);
+}
+.bandeira-amarela .ponto-bandeira {
+  background: var(--bandeira-amarela);
+}
+.bandeira-amarela2 .ponto-bandeira {
+  background: var(--bandeira-amarela2);
+}
+.bandeira-vermelha .ponto-bandeira {
+  background: var(--bandeira-vermelha);
+}
+.bandeira-vermelha2 .ponto-bandeira {
+  background: var(--bandeira-vermelha2);
+}
+
+.faixa {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e3);
+  padding: var(--e3) var(--e4);
+  font-size: 13.5px;
+  line-height: 1.5;
+  border: 1px solid;
+  border-radius: var(--raio);
+}
+
+.faixa-icone {
+  flex: none;
+  width: 19px;
+  height: 19px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 50%;
+  margin-top: 1px;
+}
+
+.faixa-info {
+  color: #1f4463;
+  background: var(--info-claro);
+  border-color: #c2d6e7;
+}
+.faixa-info .faixa-icone {
+  background: var(--info);
+  color: #fff;
+}
+
+.faixa-ok {
+  color: var(--acento-forte);
+  background: var(--acento-claro);
+  border-color: #bcdcca;
+}
+.faixa-ok .faixa-icone {
+  background: var(--acento);
+  color: #fff;
+}
+
+.faixa-alerta {
+  color: var(--alerta);
+  background: var(--alerta-claro);
+  border-color: #e6d0a3;
+}
+.faixa-alerta .faixa-icone {
+  background: var(--alerta);
+  color: #fff;
+}
+
+.faixa-erro {
+  color: var(--perigo);
+  background: var(--perigo-claro);
+  border-color: #eec6c0;
+}
+.faixa-erro .faixa-icone {
+  background: var(--perigo);
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------------
+   9. Tabelas
+   --------------------------------------------------------------------- */
+
+.tabela-envolucro {
+  overflow-x: auto;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.tabela th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tinta-fraca);
+  padding: 9px var(--e4);
+  border-bottom: 1px solid var(--traco);
+  background: var(--papel);
+  white-space: nowrap;
+}
+
+.tabela td {
+  padding: 10px var(--e4);
+  border-bottom: 1px solid var(--traco);
+  vertical-align: top;
+}
+
+.tabela tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabela tbody tr:hover {
+  background: var(--fundo);
+}
+
+.tabela th.num,
+.tabela td.num {
+  text-align: right;
+}
+
+/* ---------------------------------------------------------------------
+   10. Gráfico de barras
+   --------------------------------------------------------------------- */
+
+.grafico-barra {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 210px;
+  padding-top: var(--e3);
+  overflow-x: auto;
+}
+
+.grafico-coluna {
+  flex: 1 0 42px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  gap: 7px;
+}
+
+.grafico-haste {
+  width: 100%;
+  max-width: 44px;
+  background: var(--acento);
+  border-top: 3px solid var(--acento-forte);
+  border-radius: 2px 2px 0 0;
+  min-height: 3px;
+  transition: opacity 0.12s ease;
+}
+
+.grafico-coluna:hover .grafico-haste {
+  opacity: 0.82;
+}
+
+.grafico-rotulo {
+  font-family: var(--fonte-mono);
+  font-size: 10.5px;
+  color: var(--tinta-fraca);
+  white-space: nowrap;
+}
+
+.barra-proporcao {
+  width: 120px;
+  height: 7px;
+  background: var(--fundo-fundo);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 3px;
+}
+
+.barra-proporcao div {
+  height: 100%;
+}
+
+/* ---------------------------------------------------------------------
+   11. Estado vazio
+   --------------------------------------------------------------------- */
+
+.vazio {
+  padding: var(--e7) var(--e5);
+  text-align: center;
+  max-width: 460px;
+  margin: 0 auto;
+}
+
+.vazio h3 {
+  margin-bottom: var(--e2);
+  font-size: 16px;
+}
+
+.vazio p {
+  color: var(--tinta-media);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ---------------------------------------------------------------------
+   12. Tela de login
+   --------------------------------------------------------------------- */
+
+.tela-login {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--e5);
+  background: var(--fundo-fundo);
+}
+
+.login-grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+  width: 100%;
+  max-width: 1020px;
+  background: var(--chapa);
+  border: 1px solid var(--traco);
+  border-radius: var(--raio-g);
+  overflow: hidden;
+  box-shadow: var(--sombra-media);
+}
+
+@media (max-width: 860px) {
+  .login-grade {
+    grid-template-columns: 1fr;
+  }
+}
+
+.login-marca {
+  background: var(--visor);
+  color: var(--tinta-invertida);
+  padding: var(--e7) var(--e6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--e5);
+}
+
+.login-marca-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--e4);
+  border-bottom: 1px solid rgba(247, 246, 243, 0.14);
+}
+
+.login-marca-topo strong {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.login-selo {
+  font-family: var(--fonte-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: rgba(247, 246, 243, 0.5);
+  border: 1px solid rgba(247, 246, 243, 0.22);
+  border-radius: 2px;
+  padding: 2px 7px;
+}
+
+/* O visor: o elemento mais marcante do produto. */
+.visor {
+  background: var(--visor-alto);
+  border: 1px solid rgba(247, 246, 243, 0.13);
+  border-radius: var(--raio-g);
+  padding: var(--e4) var(--e5) var(--e3);
+}
+
+.visor-rotulo {
+  font-size: 10.5px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: rgba(247, 246, 243, 0.45);
+  margin-bottom: var(--e3);
+}
+
+.visor-numeros {
+  display: flex;
+  gap: 2px;
+  font-family: var(--fonte-mono);
+  font-size: clamp(26px, 5vw, 44px);
+  font-weight: 500;
+  line-height: 1;
+  color: #63e0a4;
+  letter-spacing: -0.01em;
+}
+
+.visor-numeros span {
+  padding: 5px 3px;
+  background: rgba(99, 224, 164, 0.07);
+  border-radius: 2px;
+}
+
+.visor-ponto {
+  background: none !important;
+  color: rgba(99, 224, 164, 0.5);
+  align-self: flex-end;
+  padding-bottom: 12px !important;
+}
+
+.visor-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--e3);
+  padding-top: var(--e3);
+  border-top: 1px solid rgba(247, 246, 243, 0.1);
+  font-size: 11.5px;
+  color: rgba(247, 246, 243, 0.45);
+}
+
+.visor-lampada {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #63e0a4;
+  box-shadow: 0 0 8px rgba(99, 224, 164, 0.65);
+}
+
+/* Lâmpada em espera: o mesmo ponto, na cor da bandeira amarela. */
+.visor-lampada.pendente {
+  background: var(--bandeira-amarela);
+  box-shadow: 0 0 8px rgba(209, 154, 31, 0.7);
+}
+
+/* Leitura de texto no visor — para os estados que não são um número.
+   Mantém a mesma fonte e a mesma cor de terminal. */
+.visor-texto {
+  font-family: var(--fonte-mono);
+  font-size: clamp(22px, 4vw, 34px);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  color: var(--bandeira-amarela);
+  padding: 5px 3px;
+  background: rgba(209, 154, 31, 0.07);
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.login-texto {
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(247, 246, 243, 0.8);
+  max-width: 42ch;
+}
+
+.login-lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 13.5px;
+  color: rgba(247, 246, 243, 0.6);
+}
+
+.login-lista li {
+  padding-left: 18px;
+  position: relative;
+}
+
+.login-lista li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #63e0a4;
+}
+
+.login-painel {
+  padding: var(--e7) var(--e6);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Título do painel claro (login, verificação). */
+.titulo-painel {
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin-bottom: 6px;
+}
+
+.abas-entrada {
+  display: flex;
+  gap: var(--e5);
+  margin-bottom: var(--e5);
+  border-bottom: 1px solid var(--traco);
+}
+
+.aba-entrada {
+  padding: 0 0 9px;
+  margin-bottom: -1px;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--tinta-fraca);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+.aba-entrada.ativa {
+  color: var(--tinta);
+  border-bottom-color: var(--acento);
+}
+
+.login-painel form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e4);
+}
+
+.login-nota {
+  margin-top: var(--e4);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--tinta-fraca);
+}
+
+.carregando {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  color: var(--tinta-media);
+  font-size: 14px;
+}
+
+.girando {
+  width: 15px;
+  height: 15px;
+  border: 2px solid var(--traco-forte);
+  border-top-color: var(--acento);
+  border-radius: 50%;
+  animation: girar 0.7s linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   13. Estrutura da aplicação
+   --------------------------------------------------------------------- */
+
+.app {
+  display: grid;
+  grid-template-columns: 244px minmax(0, 1fr);
+  min-height: 100dvh;
+}
+
+@media (max-width: 860px) {
+  .app {
+    /* minmax(0, 1fr) e não 1fr: sem o zero mínimo, a coluna cresce
+       até o conteúdo do menu de abas e a página ganha rolagem
+       horizontal no celular. */
+    grid-template-columns: minmax(0, 1fr);
+    /* A faixa escura ocupa só a altura do conteúdo. Esticada, virava
+       um bloco de meio ecrã vazio entre o menu e a primeira seção. */
+    align-items: start;
+    /* start e não stretch: o stretch reparte a altura sobrando entre as
+       duas linhas da grade e abre um vão entre o menu e o conteúdo. */
+    align-content: start;
+  }
+}
+
+/* A lateral é uma faixa escura: a coluna de menus de um terminal de
+   concessionária. Escuridão à esquerda, papel à direita. */
+.lateral {
+  background: var(--visor);
+  color: var(--tinta-invertida);
+  padding: var(--e5) var(--e4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--e6);
+}
+
+/* O arranjo do celular está no fim desta seção, depois das regras de
+   base — com a mesma especificidade, vale a ordem de declaração. */
+
+.lateral-marca {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e2);
+  padding-bottom: var(--e4);
+  border-bottom: 1px solid rgba(247, 246, 243, 0.14);
+}
+
+.lateral-marca strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.lateral-marca span {
+  font-family: var(--fonte-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  color: rgba(247, 246, 243, 0.45);
+}
+
+.lateral-titulo {
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(247, 246, 243, 0.4);
+  margin-bottom: var(--e2);
+}
+
+.lateral-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+@media (max-width: 860px) {
+  .lateral-titulo {
+    display: none;
+  }
+}
+
+.nav-item {
+  text-align: left;
+  padding: 8px 11px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(247, 246, 243, 0.68);
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  border-radius: 0 var(--raio) var(--raio) 0;
+  cursor: pointer;
+  transition: color 0.12s ease, background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.nav-item:hover {
+  color: var(--tinta-invertida);
+  background: rgba(247, 246, 243, 0.06);
+}
+
+.nav-item[aria-current='page'] {
+  color: var(--tinta-invertida);
+  background: rgba(99, 224, 164, 0.12);
+  border-left-color: #63e0a4;
+}
+
+.lateral-rodape {
+  margin-top: auto;
+  padding-top: var(--e4);
+  border-top: 1px solid rgba(247, 246, 243, 0.14);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* O rodapé no celular é tratado na grade de .lateral, logo acima. */
+
+.lateral-rodape strong {
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.lateral-rodape span {
+  font-size: 11.5px;
+  color: rgba(247, 246, 243, 0.45);
+}
+
+.lateral-rodape .btn-fantasma {
+  color: rgba(247, 246, 243, 0.7);
+  align-self: flex-start;
+}
+
+.lateral-rodape .btn-fantasma:hover:not(:disabled) {
+  background: rgba(247, 246, 243, 0.1);
+  color: var(--tinta-invertida);
+}
+
+/* ---------------------------------------------------------------------
+   Arranjo do celular
+
+   Vem depois das regras de base de propósito: com a mesma
+   especificidade, a cascata resolve por ordem de declaração.
+   --------------------------------------------------------------------- */
+
+@media (max-width: 860px) {
+  .lateral {
+    /* Grade de duas linhas: marca e conta dividem a primeira, as abas
+       ocupam a segunda. Empilhadas num flex, as três peças brigariam
+       pela mesma linha e a marca ficaria espremida. */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'marca conta'
+      'abas  abas';
+    grid-template-rows: auto auto;
+    align-items: center;
+    /* start e não stretch: o stretch distribuiria a altura sobrando
+       entre as duas linhas e abriria um vão vazio sob a marca. */
+    align-content: start;
+    gap: var(--e3);
+    overflow-x: visible;
+    padding: var(--e3) var(--e4);
+  }
+
+  .lateral-marca {
+    grid-area: marca;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .lateral nav {
+    grid-area: abas;
+    min-width: 0;
+  }
+
+  .lateral-rodape {
+    grid-area: conta;
+    margin: 0;
+    border-top: none;
+    padding-top: 0;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--e3);
+  }
+
+  /* No celular sobra o botão; nome e aviso viram ruído. */
+  .lateral-rodape span,
+  .lateral-rodape strong {
+    display: none;
+  }
+
+  .lateral-rodape .btn-fantasma {
+    width: auto;
+    margin: 0 !important;
+    padding: 6px 12px;
+  }
+
+  /* As abas viram uma faixa rolável na horizontal: cinco menus não
+     cabem na largura do celular, mas uma rolagem de toque resolve. */
+  .lateral-nav {
+    flex-direction: row;
+    gap: var(--e1);
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+    /* Permite encolher abaixo da largura do conteúdo — sem isto a faixa
+       empurra a página e aparece rolagem horizontal. */
+    min-width: 0;
+  }
+  .lateral-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* O marcador da aba migrou da borda esquerda para a de baixo: numa
+     faixa horizontal, a vertical fica fora de vista. */
+  .nav-item {
+    white-space: nowrap;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    border-radius: var(--raio) var(--raio) 0 0;
+    padding: 7px 10px;
+  }
+  .nav-item[aria-current='page'] {
+    border-left-color: transparent;
+    border-bottom-color: #63e0a4;
+  }
+}
+
+.principal {
+  min-width: 0;
+  padding: var(--e6) var(--e6) var(--e8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--e5);
+}
+
+@media (max-width: 860px) {
+  .principal {
+    padding: var(--e4) var(--e4) var(--e7);
+  }
+}
+
+.cabecalho-pagina {
+  padding-bottom: var(--e4);
+  border-bottom: 1px solid var(--traco);
+}
+
+.cabecalho-pagina p {
+  margin-top: 5px;
+  font-size: 13.5px;
+  color: var(--tinta-media);
+  max-width: 68ch;
+  line-height: 1.55;
+}
+
+/* ---------------------------------------------------------------------
+   14. Preferências de movimento e impressão
+   --------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  .login-painel,
+  .chapa-cabecalho .btn {
+    display: none;
+  }
+  body {
+    background: #fff;
+  }
+}
