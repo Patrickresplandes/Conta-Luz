@@ -243,6 +243,12 @@ ok('CSP bloqueia base-uri', middleware.includes("base-uri 'none'"));
 ok('CSP bloqueia frame-ancestors', middleware.includes("frame-ancestors 'none'"));
 ok('CSP restringe form-action', middleware.includes("form-action 'self'"));
 ok('CSP permite o Firebase em connect-src', middleware.includes('firebaseio.com'));
+/* Regressão: página pré-renderizada sai com scripts sem nonce, e a CSP
+   com 'strict-dynamic' bloqueia o app inteiro em produção. */
+ok(
+  'layout força renderização dinâmica (nonce nos scripts)',
+  ler('src/app/layout.tsx').includes("export const dynamic = 'force-dynamic';")
+);
 ok('CSP não usa unsafe-inline em produção', middleware.includes("isDev\n      ? \"script-src 'self' 'unsafe-eval' 'unsafe-inline' https://apis.google.com\"\n      : `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`"));
 
 ok('rules negam escrita do cliente nas medições', rules.includes('allow write: if false;'));

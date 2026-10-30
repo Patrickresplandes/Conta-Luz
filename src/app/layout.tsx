@@ -30,6 +30,15 @@ const plexMono = IBM_Plex_Mono({
   display: 'swap',
 });
 
+/*
+ * Renderização por requisição, obrigatória por causa da CSP: o nonce
+ * muda a cada requisição (middleware.ts) e o Next.js só o aplica aos
+ * scripts de páginas dinâmicas. Uma página pré-renderizada no build sai
+ * com scripts sem nonce, o 'strict-dynamic' bloqueia todos e o app fica
+ * parado na tela de carregamento.
+ */
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Controle de Energia',
   description:
