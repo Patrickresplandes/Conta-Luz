@@ -16,7 +16,7 @@ import { LIMITES, loginSchema, registroSchema } from '@/lib/schemas';
 type Modo = 'entrar' | 'registrar';
 
 export function TelaLogin() {
-  const { entrar, registrar, semConfiguracao } = useAuth();
+  const { entrar, entrarComGoogle, registrar, semConfiguracao } = useAuth();
   const [modo, setModo] = useState<Modo>('entrar');
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -113,6 +113,20 @@ export function TelaLogin() {
     }
   }
 
+  async function entrarGoogle() {
+    setErro('');
+    setAviso('');
+    setEnviando(true);
+    try {
+      await entrarComGoogle();
+    } catch (e) {
+      /* Fechar o popup é desistência, não erro. */
+      if (!codigoDe(e).includes('popup-closed-by-user')) setErro(mensagemDeErro(e));
+    } finally {
+      setEnviando(false);
+    }
+  }
+
   return (
     <main className="tela-login">
       <div className="login-grade">
@@ -190,6 +204,25 @@ export function TelaLogin() {
             >
               Criar conta
             </button>
+          </div>
+
+          <button
+            type="button"
+            className="btn btn-largo btn-google"
+            onClick={entrarGoogle}
+            disabled={enviando || semConfiguracao}
+          >
+            <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+              <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z" />
+              <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
+              <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z" />
+              <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z" />
+            </svg>
+            Continuar com Google
+          </button>
+
+          <div className="divisor-entrada">
+            <span>ou com e-mail</span>
           </div>
 
           <form onSubmit={submeter} noValidate>
@@ -295,13 +328,26 @@ function eEhCredencial(e: unknown): boolean {
   );
 }
 
-/** Traduz os erros do Firebase para português claro. */
-function mensagemDeErro(e: unknown): string {
-  const codigo =
+function codigoDe(e: unknown): string {
+  return (
     (e as { code?: string })?.code ??
     (e as { errorCode?: string })?.errorCode ??
-    '';
+    ''
+  );
+}
 
+/** Traduz os erros do Firebase para português claro. */
+function mensagemDeErro(e: unknown): string {
+  const codigo = codigoDe(e);
+
+  if (codigo.includes('popup-blocked'))
+    return 'O navegador bloqueou a janela do Google. Libere os popups deste site e tente de novo.';
+  if (codigo.includes('unauthorized-domain'))
+    return 'Este endereço não está autorizado no Firebase (Authentication → Settings → Authorized domains).';
+  if (codigo.includes('operation-not-allowed'))
+    return 'O login com Google não está ativado no Firebase.';
+  if (codigo.includes('account-exists-with-different-credential'))
+    return 'Já existe uma conta com este e-mail. Entre com e-mail e senha.';
   if (codigo.includes('invalid-email')) return 'E-mail inválido.';
   if (codigo.includes('email-already-in-use'))
     return 'Já existe uma conta com este e-mail.';
@@ -314,5 +360,10 @@ function mensagemDeErro(e: unknown): string {
   if (codigo.includes('network-request-failed'))
     return 'Sem conexão com o servidor. Verifique sua internet.';
 
-  return 'Não foi possível concluir. Tente novamente.';
+  /* O código vai junto: sem ele, um erro não previsto aqui é impossível
+     de diagnosticar a partir da tela. */
+  console.error('Falha de autenticação:', e);
+  return codigo
+    ? `Não foi possível concluir (${codigo}). Tente novamente.`
+    : 'Não foi possível concluir. Tente novamente.';
 }

@@ -27,7 +27,9 @@ import {
 } from 'react';
 import {
   createUserWithEmailAndPassword,
+  GoogleAuthProvider,
   signInWithEmailAndPassword,
+  signInWithPopup,
   signOut as firebaseSignOut,
   sendEmailVerification,
   updateProfile,
@@ -55,6 +57,8 @@ export interface EstadoAuth {
   /** true quando o e-mail da conta já foi confirmado. */
   emailVerificado: boolean;
   entrar(email: string, senha: string): Promise<void>;
+  /** Entra (ou cria a conta) com a conta Google, por popup. */
+  entrarComGoogle(): Promise<void>;
   registrar(nome: string, email: string, senha: string): Promise<void>;
   sair(): Promise<void>;
   reenviarVerificacao(): Promise<void>;
@@ -127,6 +131,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await signInWithEmailAndPassword(firebaseAuth(), email, senha);
   }, []);
 
+  /*
+   * O Google já entrega o e-mail confirmado (`email_verified` true), então
+   * a conta entra liberada, sem a etapa de confirmação. O popup precisa do
+   * COOP `same-origin-allow-popups` (next.config.mjs) e do iframe do
+   * authDomain liberado na CSP (middleware.ts).
+   */
+  const entrarComGoogle = useCallback(async () => {
+    const provedor = new GoogleAuthProvider();
+    provedor.setCustomParameters({ prompt: 'select_account' });
+    await signInWithPopup(firebaseAuth(), provedor);
+  }, []);
+
   const registrar = useCallback(async (nome: string, email: string, senha: string) => {
     const cred = await createUserWithEmailAndPassword(firebaseAuth(), email, senha);
     await updateProfile(cred.user, { displayName: nome });
@@ -172,6 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       usuario,
       emailVerificado,
       entrar,
+      entrarComGoogle,
       registrar,
       sair,
       reenviarVerificacao,
@@ -183,6 +200,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       usuario,
       emailVerificado,
       entrar,
+      entrarComGoogle,
       registrar,
       sair,
       reenviarVerificacao,

@@ -44,8 +44,10 @@ export function middleware(req: NextRequest) {
        Em desenvolvimento o Fast Refresh depende de 'unsafe-eval' e
        'unsafe-inline', então relaxamos APENAS fora de produção. */
     isDev
-      ? "script-src 'self' 'unsafe-eval' 'unsafe-inline'"
+      ? "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://apis.google.com"
       : `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    /* O login com Google (popup) usa um iframe do authDomain do Firebase. */
+    "frame-src 'self' https://*.firebaseapp.com https://accounts.google.com",
     /* O Firebase Auth e o Firestore usam WebSocket. O Analytics envia os
        eventos para o Google Analytics. */
     "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com",
