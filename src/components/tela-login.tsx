@@ -89,11 +89,7 @@ export function TelaLogin() {
       } else {
         await registrar(nomeLimpo, emailLimpo, senhaLimpa);
         falhasRef.current = 0;
-        setAviso(
-          semConfiguracao
-            ? 'Conta de demonstração criada. Os dados ficam só neste navegador.'
-            : 'Conta criada. Abra o e-mail e confirme o endereço para liberar o uso do app.'
-        );
+        setAviso('Conta criada. Abra o e-mail e confirme o endereço para liberar o uso do app.');
       }
     } catch (e) {
       const mensagem = mensagemDeErro(e);
@@ -164,10 +160,9 @@ export function TelaLogin() {
             <div className="faixa faixa-alerta" style={{ marginBottom: 18 }}>
               <span className="faixa-icone">!</span>
               <span>
-                <strong>Modo demonstração.</strong> O Firebase não está
-                configurado neste ambiente, então o acesso é local: entre com
-                qualquer e-mail e uma senha de 8 caracteres ou mais. Os dados
-                são os da fatura 09/2026 e ficam só neste navegador.
+                <strong>Acesso indisponível.</strong> O Firebase não está
+                configurado neste ambiente. Defina as variáveis
+                NEXT_PUBLIC_FIREBASE_* no .env.local e reinicie o servidor.
               </span>
             </div>
           ) : null}
@@ -258,7 +253,7 @@ export function TelaLogin() {
             <button
               type="submit"
               className="btn btn-principal btn-largo"
-              disabled={enviando}
+              disabled={enviando || semConfiguracao}
               style={{ marginTop: 18 }}
             >
               {enviando
@@ -270,9 +265,7 @@ export function TelaLogin() {
           </form>
 
           <p className="login-nota">
-            {semConfiguracao
-              ? 'Demonstração local: nada é gravado no servidor e os dados desaparecem ao fechar a aba.'
-              : modo === 'registrar'
+            {modo === 'registrar'
                 ? 'Você recebe um e-mail de confirmação. A conta só libera a gravação depois de confirmado.'
                 : 'Seus dados ficam vinculados à sua conta e não são vistos por mais ninguém.'}
           </p>

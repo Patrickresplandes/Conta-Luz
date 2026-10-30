@@ -16,7 +16,7 @@
     "test:tudo": "npm run test && npm run test:paridade && npm run test:seguranca && npm run test:importar"
   },
   "dependencies": {
-    "firebase": "^11.1.0",
+    "firebase": "^11.10.0",
     "firebase-admin": "^13.0.2",
     "next": "^15.1.3",
     "react": "^19.0.0",

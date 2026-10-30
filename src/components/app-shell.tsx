@@ -50,7 +50,7 @@ export function AppShell({
 }: {
   children: (aba: Aba) => ReactNode;
 }) {
-  const { usuario, sair, semConfiguracao } = useAuth();
+  const { usuario, sair } = useAuth();
   const [aba, setAba] = useState<Aba>('medicao');
 
   const atual = ABAS.find((a) => a.id === aba) ?? ABAS[0];
@@ -82,11 +82,7 @@ export function AppShell({
 
         <div className="lateral-rodape">
           <strong>{usuario?.displayName ?? usuario?.email ?? 'Você'}</strong>
-          <span>
-            {semConfiguracao
-              ? 'Demonstração — dados só neste navegador.'
-              : 'Seus dados ficam na sua conta.'}
-          </span>
+          <span>Seus dados ficam na sua conta.</span>
           <button
             type="button"
             className="btn btn-fantasma"

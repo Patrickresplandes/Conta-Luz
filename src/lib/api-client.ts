@@ -8,20 +8,11 @@
  *
  * Nenhum dado vindo do servidor é injetado como HTML. A UI renderiza
  * texto por meio do React, que escapa por padrão.
- *
- * MODO DEMONSTRAÇÃO
- * Sem o Firebase configurado, o app não tem como falar com o servidor
- * (a API devolveria 503). Nesse caso as chamadas são respondidas pelo
- * store local de `modo-demo.ts`, com o MESMO formato de resposta — os
- * painéis não precisam saber se estão vendo o Firestore ou a demonstração.
- * A checagem acontece antes de qualquer chamada de rede, e o servidor
- * continua exigindo token verificado.
  */
 
 'use client';
 
 import { tokenParaRequisicao } from '@/components/auth-provider';
-import { csvDemo, demoAtivo, responderDemo } from './modo-demo';
 
 export interface ErroApi {
   erro: string;
@@ -47,12 +38,6 @@ async function requisitar<T>(
   caminho: string,
   init: RequestInit = {}
 ): Promise<T> {
-  /* Modo demonstração: a resposta vem do store local, sem rede e sem
-     token. O servidor nem é consultado. */
-  if (demoAtivo()) {
-    return responderDemo<T>(caminho, init);
-  }
-
   const token = await tokenParaRequisicao();
 
   const headers = new Headers(init.headers);
@@ -102,8 +87,6 @@ export const api = {
    * outra conta.
    */
   texto: async (caminho: string): Promise<string> => {
-    if (demoAtivo()) return csvDemo();
-
     const token = await tokenParaRequisicao();
     const resp = await fetch(caminho, {
       headers: {

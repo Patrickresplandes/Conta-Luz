@@ -17,6 +17,7 @@
 'use client';
 
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
+import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics';
 import {
   getAuth,
   browserLocalPersistence,
@@ -35,6 +36,7 @@ const config = {
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 /** Verdadeiro quando todas as variáveis públicas do Firebase estão presentes. */
@@ -55,6 +57,23 @@ export function firebaseApp(): FirebaseApp {
   }
   appInstancia = getApps().length ? getApps()[0] : initializeApp(config);
   return appInstancia;
+}
+
+let analyticsInstancia: Analytics | null = null;
+
+/**
+ * Inicia o Analytics, se possível. `getAnalytics` quebra no servidor e em
+ * navegadores sem IndexedDB/cookies, por isso passa antes por `isSupported`.
+ * Sem measurementId (ou sem suporte) devolve null — o app segue sem métricas.
+ * Só roda em produção: o uso local não deve poluir as métricas reais.
+ */
+export async function firebaseAnalytics(): Promise<Analytics | null> {
+  if (analyticsInstancia) return analyticsInstancia;
+  if (process.env.NODE_ENV !== 'production') return null;
+  if (!firebaseConfigurado() || !config.measurementId) return null;
+  if (!(await isSupported())) return null;
+  analyticsInstancia = getAnalytics(firebaseApp());
+  return analyticsInstancia;
 }
 
 let authInstancia: Auth | null = null;
@@ -177,7 +196,7 @@ export function observarToken(): () => void {
  * getIdToken() com `true` força a renovação quando necessário.
  */
 export async function garantirToken(): Promise<string | null> {
-  /* Sem Firebase configurado (modo demonstração) não há token — e
+  /* Sem Firebase configurado não há token — e
      chamar `firebaseAuth()` aqui lançaria. */
   if (!firebaseConfigurado()) return null;
   const auth = firebaseAuth();

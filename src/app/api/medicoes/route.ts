@@ -17,7 +17,6 @@ import { exigirSessao } from '@/lib/sessao';
 import { consumirLimite, identificarCliente, respostaLimite } from '@/lib/rate-limit';
 import { jsonOk, jsonErro, jsonErroDeExcecao, jsonMetodoNaoPermitido } from '@/lib/api';
 import { salvarMedicaoSchema, medicaoSchema, validarLeitura, LIMITES } from '@/lib/schemas';
-import { MEDICOES_PADRAO } from '@/lib/seed';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -151,5 +150,3 @@ export async function DELETE(req: NextRequest) {
 export async function PUT() {
   return jsonMetodoNaoPermitido(['GET', 'POST', 'DELETE']);
 }
-
-export const MEDICOES_REFERENCIA = MEDICOES_PADRAO;

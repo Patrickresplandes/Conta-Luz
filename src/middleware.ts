@@ -46,20 +46,19 @@ export function middleware(req: NextRequest) {
     isDev
       ? "script-src 'self' 'unsafe-eval' 'unsafe-inline'"
       : `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
-    /* O Firebase Auth e o Firestore usam WebSocket. */
-    "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com",
+    /* O Firebase Auth e o Firestore usam WebSocket. O Analytics envia os
+       eventos para o Google Analytics. */
+    "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com",
     /* Estilos inline são necessários ao styled-jsx do Next.js; não afeta
        execução de script. */
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob:",
+    "img-src 'self' data: blob: https://*.google-analytics.com https://www.googletagmanager.com",
     "font-src 'self' data:",
     /* Fecha vetores clássicos de injeção. */
     "object-src 'none'",
     "base-uri 'none'",
     "frame-ancestors 'none'",
     "form-action 'self'",
-    "permissions-policy 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()'",
-    "referrer-policy 'strict-origin-when-cross-origin'",
     "upgrade-insecure-requests",
     ...(isDev ? [] : ['block-all-mixed-content']),
   ].join('; ');

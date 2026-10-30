@@ -40,15 +40,15 @@ import {
   garantirToken,
   observarToken,
   prepararAuth,
+  firebaseAnalytics,
 } from '@/lib/firebase-client';
-import { demoAtivo, usuarioDemo } from '@/lib/modo-demo';
 
 export interface EstadoAuth {
   /** true enquanto o estado inicial ainda está sendo resolvido. */
   carregando: boolean;
   /**
-   * true quando o Firebase não está configurado — o app entra em modo
-   * demonstração (login e dados mockados, só neste navegador).
+   * true quando o Firebase não está configurado — faltam as variáveis
+   * NEXT_PUBLIC_FIREBASE_* e o acesso fica bloqueado.
    */
   semConfiguracao: boolean;
   usuario: User | null;
@@ -83,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         await prepararAuth();
         cancelar = observarToken();
+        void firebaseAnalytics();
         /*
          * A assinatura de usuário vive em `observarToken`, que o Firebase
          * dispara ao restaurar a sessão salva e a cada entrada e saída.
@@ -123,27 +124,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const entrar = useCallback(async (email: string, senha: string) => {
-    /* Modo demonstração: não há Firebase para consultar, e a senha não é
-       conferida contra nada. A conta é criada em memória e vale para
-       qualquer e-mail válido — é um atalho de DEMO, não do caminho real.
-       O servidor continua exigindo token verificado; ele só não é
-       chamado aqui. */
-    if (demoAtivo()) {
-      setUsuario(usuarioDemo(email) as unknown as User);
-      setEmailVerificado(true);
-      return;
-    }
-
     await signInWithEmailAndPassword(firebaseAuth(), email, senha);
   }, []);
 
   const registrar = useCallback(async (nome: string, email: string, senha: string) => {
-    if (demoAtivo()) {
-      setUsuario(usuarioDemo(email, nome) as unknown as User);
-      setEmailVerificado(true);
-      return;
-    }
-
     const cred = await createUserWithEmailAndPassword(firebaseAuth(), email, senha);
     await updateProfile(cred.user, { displayName: nome });
     /* O e-mail precisa ser confirmado: o servidor e as Firestore Rules
@@ -152,17 +136,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const sair = useCallback(async () => {
-    if (demoAtivo()) {
-      setUsuario(null);
-      setEmailVerificado(false);
-      return;
-    }
-
     await firebaseSignOut(firebaseAuth());
   }, []);
 
   const reenviarVerificacao = useCallback(async () => {
-    if (demoAtivo()) return;
     const u = firebaseAuth().currentUser;
     if (u) await sendEmailVerification(u);
   }, []);
@@ -181,7 +158,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * do protótipo.)
    */
   const revalidarConta = useCallback(async () => {
-    if (demoAtivo()) return;
     const u = firebaseAuth().currentUser;
     if (!u) return;
     await u.reload();
@@ -226,10 +202,7 @@ export function useAuth(): EstadoAuth {
 /**
  * Devolve o token de ID atual, renovando se necessário.
  * Toda chamada à API usa esta função.
- *
- * No modo demonstração não há token: as chamadas não saem do navegador.
  */
 export async function tokenParaRequisicao(): Promise<string | null> {
-  if (demoAtivo()) return null;
   return garantirToken();
 }
